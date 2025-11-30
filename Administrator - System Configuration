@@ -1,0 +1,46 @@
+@startuml
+title Диаграмма последовательности: Администратор - Настройка системы
+
+actor "Администратор" as Admin
+participant "Панель\nадминистратора" as AdminPanel
+participant "Система\nаутентификации" as Auth
+participant "Центральный\nхаб" as Hub
+participant "База данных" as DB
+participant "Система\nлогирования" as Logger
+participant "Все устройства" as Devices
+
+Admin -> AdminPanel: Вход в админ-панель
+AdminPanel -> Auth: adminLogin(username, password)
+Auth -> DB: verifyAdminCredentials()
+DB --> Auth: credentials_valid
+Auth --> AdminPanel: login_success
+
+Admin -> AdminPanel: Запрос системной статистики
+AdminPanel -> Hub: getSystemStats()
+Hub -> DB: collectAllMetrics()
+DB --> Hub: {devices_online: 15, energy_usage: "2.3kW", errors: 0}
+Hub --> AdminPanel: system_stats
+
+Admin -> AdminPanel: Изменение конфигурации устройства
+AdminPanel -> Hub: updateDeviceConfig(device_id, new_settings)
+Hub -> DB: validateConfigChanges()
+DB --> Hub: validation_passed
+Hub -> Devices: pushNewConfiguration()
+Devices --> Hub: config_updated
+
+Hub -> DB: saveAdminChanges()
+DB --> Hub: changes_saved
+Hub -> Logger: logAdminActivity("config_updated")
+Logger --> Hub: activity_logged
+
+Hub --> AdminPanel: update_success
+AdminPanel --> Admin: Показывает "Конфигурация обновлена"
+
+Admin -> AdminPanel: Просмотр логов безопасности
+AdminPanel -> Logger: getSecurityLogs(time_range="24h")
+Logger -> DB: querySecurityEvents()
+DB --> Logger: security_events
+Logger --> AdminPanel: logs_data
+AdminPanel --> Admin: Отображает журнал событий
+
+@enduml
