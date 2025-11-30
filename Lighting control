@@ -1,0 +1,29 @@
+@startuml
+title Диаграмма последовательности: Управление освещением
+
+actor "Владелец" as Owner
+participant "Мобильное\nприложение" as App
+participant "Центральный\nхаб" as Hub
+participant "Умная лампа" as Lamp
+participant "База данных" as DB
+participant "Сервер\nуведомлений" as Notifications
+
+Owner -> App: Нажимает кнопку включения света
+App -> Hub: sendCommand("light_on", room="living_room")
+Hub -> DB: getDeviceSettings("living_room_light")
+DB --> Hub: {brightness: 80%, color: "warm"}
+Hub -> Lamp: switchOn(brightness=80%, color="warm")
+Lamp --> Hub: status: ON
+Hub -> DB: updateDeviceStatus("living_room_light", "ON")
+DB --> Hub: status_updated
+Hub -> Notifications: logActivity("light_turned_on")
+Notifications --> Hub: logged
+Hub --> App: success_response
+App --> Owner: Отображает иконку включенного света
+
+alt Ошибка связи
+    Hub -> App: error_response("device_unavailable")
+    App -> Owner: Показывает сообщение об ошибке
+end
+
+@enduml
