@@ -1,0 +1,40 @@
+@startuml
+title Диаграмма последовательности: Гость - Управление освещением (ограниченный доступ)
+
+actor "Гость" as Guest
+participant "Гостевой\nинтерфейс" as GuestApp
+participant "Система\nавторизации" as Auth
+participant "Центральный\nхаб" as Hub
+participant "Умная лампа" as Lamp
+participant "База данных" as DB
+
+Guest -> GuestApp: Открывает гостевой режим
+GuestApp -> Auth: validateGuestAccess()
+Auth -> DB: checkGuestPermissions()
+DB --> Auth: {lights_control: true, temp_control: false}
+Auth --> GuestApp: access_granted
+
+Guest -> GuestApp: Нажимает включить свет в гостиной
+GuestApp -> Hub: guestCommand("light_on", room="living_room")
+Hub -> DB: verifyGuestLimitations()
+DB --> Hub: {max_brightness: 50%, no_color_change}
+
+Hub -> Lamp: switchOn(brightness=50%)
+Lamp --> Hub: status: ON (brightness=50%)
+
+Hub -> DB: logGuestActivity("guest_light_on")
+DB --> Hub: activity_logged
+
+Hub --> GuestApp: success_response
+GuestApp --> Guest: Показывает включенный свет
+
+alt Попытка несанкционированного действия
+    Guest -> GuestApp: Пытается изменить температуру
+    GuestApp -> Hub: guestCommand("set_temp", value=25)
+    Hub -> Auth: validateGuestPermission("temp_control")
+    Auth --> Hub: permission_denied
+    Hub --> GuestApp: error_response("access_denied")
+    GuestApp --> Guest: Показывает "Функция недоступна"
+end
+
+@enduml
