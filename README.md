@@ -118,3 +118,49 @@
 
 # 3 Администратор - Настройка системы
 <img width="1501" height="1034" alt="Image" src="https://github.com/user-attachments/assets/3ee9b126-cad5-474a-85d1-3224929aab7f" />
+## Основные компоненты
+Администратор — пользователь с правами управления системой.
+Панель администратора — интерфейс для управления.
+Система аутентификации — проверяет учетные данные.
+Центральный хаб — координатор операций.
+База данных — хранит данные и конфигурации.
+Система логирования — фиксирует события.
+Все устройства — целевые устройства в сети.
+
+## 1. Аутентификация
+```
+Admin -> AdminPanel: Вход в админ-панель
+AdminPanel -> Auth: adminLogin(username, password)
+Auth -> DB: verifyAdminCredentials()
+DB --> Auth: credentials_valid
+Auth --> AdminPanel: login_success
+```
+## 2. Запрос статистики
+```
+Admin -> AdminPanel: Запрос системной статистики
+AdminPanel -> Hub: getSystemStats()
+Hub -> DB: collectAllMetrics()
+DB --> Hub: {devices_online: 15, ...}
+Hub --> AdminPanel: system_stats
+```
+## 3 Изменение конфигурации устройства
+```
+Admin -> AdminPanel: Изменение конфигурации
+AdminPanel -> Hub: updateDeviceConfig(...)
+Hub -> DB: validateConfigChanges()
+DB --> Hub: validation_passed
+Hub -> Devices: pushNewConfiguration()
+Devices --> Hub: config_updated
+Hub -> DB: saveAdminChanges()
+Hub -> Logger: logAdminActivity(...)
+Hub --> AdminPanel: update_success
+```
+## 4 Просмотр логов безопасности
+```
+Admin -> AdminPanel: Просмотр логов
+AdminPanel -> Logger: getSecurityLogs(...)
+Logger -> DB: querySecurityEvents()
+DB --> Logger: security_events
+Logger --> AdminPanel: logs_data
+AdminPanel --> Admin: Отображает журнал
+```
